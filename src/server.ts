@@ -38,5 +38,9 @@ app.register(fastifySwaggerUi, {
 app.register(registerRoutes)
 
 app.listen({ port:3333}).then(() => { 
-    console.log("HTTP server running!")
+    const baseUrl = `http://localhost:3333`;
+    console.log("🚀 HTTP server running!");
+    console.log("🔗 Available endpoints:");
+    console.log(`   📦 API:        ${baseUrl}/`);
+    console.log(`   📄 Swagger UI: ${baseUrl}/docs`);
 })

@@ -16,3 +16,11 @@ export async function getAllUsers() {
     select: { id: true, name: true, email: true }
   });
 }
+
+export async function findUserById(id: string) {
+  return prisma.user.findUnique({ where: { id } });
+}
+
+export async function deleteUserById(id: string) {
+  return prisma.user.delete({ where: { id } });
+}

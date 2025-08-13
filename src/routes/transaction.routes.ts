@@ -44,27 +44,33 @@ schema: {
     }
   }, transactionController.createTransaction);
 
-  app.get('/transactions', {
-    preHandler: [authMiddleware],
-    schema: {
-      tags: ['Transactions'],
-      description: 'Listar transações do usuário logado',
-      response: {
-        200: z.array(z.object({
-          id: z.string(),
-          amount: z.number(),
-          date: z.string(),
-          type: transactionTypeEnum,
-          description: z.string().nullable(),
-          accountId: z.string(),
-          categoryId: z.string(),
-          userId: z.string(),
-          createdAt: z.string(),
-          updatedAt: z.string()
-        }))
-      }
+app.get('/transactions', {
+  preHandler: [authMiddleware],
+  schema: {
+    tags: ['Transactions'],
+    description: 'Listar transações com filtros',
+    querystring: z.object({
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
+      categoryId: z.string().optional(),
+      type: transactionTypeEnum.optional()
+    }),
+    response: {
+      200: z.array(z.object({
+        id: z.string(),
+        amount: z.number(),
+        date: z.string(),
+        type: transactionTypeEnum,
+        description: z.string().nullable(),
+        accountId: z.string(),
+        categoryId: z.string(),
+        userId: z.string(),
+        createdAt: z.string(),
+        updatedAt: z.string()
+      }))
     }
-  }, transactionController.listTransactions);
+  }
+}, transactionController.listTransactions);
 
   app.patch('/transaction/:id', {
     preHandler: [authMiddleware],

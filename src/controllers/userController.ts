@@ -35,8 +35,30 @@ export async function loginUser(request: FastifyRequest, reply: FastifyReply) {
   const token = request.server.jwt.sign({ userId: user.id });
   reply.send({ token });
 }
-
+//Get User
 export async function getUsers ( request: FastifyRequest, reply: FastifyReply) {
      const users = await userService.getAllUsers()
         reply.send(users);
+}
+
+//Get User BY ID
+export async function getUserById(request: FastifyRequest, reply: FastifyReply) {
+  const { id } = request.params as { id: string };
+  const user = await userService.findUserById(id);
+  if (!user) {
+    return reply.code(404).send({ message: "Usuário não encontrado" });
+  }
+  reply.send({ id: user.id, name: user.name, email: user.email });
+}
+
+
+//DELETE User
+export async function deleteUserById(request: FastifyRequest, reply: FastifyReply) {
+  const { id } = request.params as { id: string };
+  const user = await userService.findUserById(id);
+  if (!user) {
+    return reply.code(404).send({ message: "Usuário não encontrado" });
+  }
+  await userService.deleteUserById(id);
+  reply.code(204).send();
 }

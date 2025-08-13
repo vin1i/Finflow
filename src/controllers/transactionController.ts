@@ -19,30 +19,75 @@ export async function createTransaction(request: FastifyRequest, reply: FastifyR
     return reply.code(400).send({ message: "Tipo da transação deve ser igual ao tipo da categoria" });
   }
 
+  // Buscar conta e atualizar saldo
+  const account = await prisma.account.findUnique({ where: { id: accountId } });
+  if (!account) {
+    return reply.code(400).send({ message: "Conta não encontrada" });
+  }
+
+  let newBalance = account.balance;
+  if (type === "income") {
+    newBalance += amount;
+  } else if (type === "expense") {
+    newBalance -= amount;
+  }
+
+  await prisma.account.update({
+    where: { id: accountId },
+    data: { balance: newBalance }
+  });
+
   const useCase = new CreateTransactionUseCase();
   const transaction = await useCase.execute({ amount, date, type, description, accountId, categoryId, userId });
-reply.code(201).send({
-  ...transaction,
-  date: transaction.date.toISOString(), 
-  description: transaction.description ?? null,
-  createdAt: transaction.createdAt.toISOString(),
-  updatedAt: transaction.updatedAt.toISOString()
-});
+  reply.code(201).send({
+    ...transaction,
+    date: transaction.date.toISOString(), 
+    description: transaction.description ?? null,
+    createdAt: transaction.createdAt.toISOString(),
+    updatedAt: transaction.updatedAt.toISOString()
+  });
 }
-
 // GET /transactions
 export async function listTransactions(request: FastifyRequest, reply: FastifyReply) {
   const userId = (request as any).user.userId;
-  // Adapte para aceitar filtros via querystring se desejar
+  const { startDate, endDate, categoryId, type } = request.query as {
+    startDate?: string;
+    endDate?: string;
+    categoryId?: string;
+    type?: string;
+  };
+
+  const filters: any = {};
+  if (startDate && endDate) {
+    filters.date = { gte: new Date(startDate), lte: new Date(endDate) };
+  } else if (startDate) {
+    filters.date = { gte: new Date(startDate) };
+  } else if (endDate) {
+    filters.date = { lte: new Date(endDate) };
+  }
+  if (categoryId) {
+    filters.categoryId = categoryId;
+  }
+  if (type) {
+    filters.type = type;
+  }
+
   const useCase = new ListTransactionsUseCase();
-  const transactions = await useCase.execute(userId);
-  reply.send(
-    transactions.map(tx => ({
-      ...tx,
-      createdAt: tx.createdAt.toISOString(),
-      updatedAt: tx.updatedAt.toISOString()
-    }))
-  );
+  const transactions = await useCase.execute(userId, filters);
+reply.send(
+  transactions.map(tx => ({
+    id: tx.id,
+    amount: tx.amount,
+    date: tx.date instanceof Date ? tx.date.toISOString() : tx.date,
+    type: tx.type,
+    description: tx.description ?? null,
+    accountId: tx.accountId,
+    categoryId: tx.categoryId,
+    userId: tx.userId,
+    createdAt: tx.createdAt instanceof Date ? tx.createdAt.toISOString() : tx.createdAt,
+    updatedAt: tx.updatedAt instanceof Date ? tx.updatedAt.toISOString() : tx.updatedAt
+  }))
+);
 }
 
 // PATCH /transaction/:id
@@ -61,6 +106,32 @@ export async function updateTransaction(request: FastifyRequest, reply: FastifyR
 // DELETE /transaction/:id
 export async function deleteTransaction(request: FastifyRequest, reply: FastifyReply) {
   const { id } = request.params as { id: string };
+
+  // Buscar transação antes de deletar
+  const transaction = await prisma.transaction.findUnique({ where: { id } });
+  if (!transaction) {
+    return reply.code(404).send({ message: "Transação não encontrada" });
+  }
+
+  // Buscar conta associada
+  const account = await prisma.account.findUnique({ where: { id: transaction.accountId } });
+  if (!account) {
+    return reply.code(404).send({ message: "Conta não encontrada" });
+  }
+
+  let newBalance = account.balance;
+  if (transaction.type === "income") {
+    newBalance -= transaction.amount;
+  } else if (transaction.type === "expense") {
+    newBalance += transaction.amount;
+  }
+
+  await prisma.account.update({
+    where: { id: account.id },
+    data: { balance: newBalance }
+  });
+
+  // Deletar transação
   const useCase = new DeleteTransactionUseCase();
   await useCase.execute(id);
   reply.code(204).send();

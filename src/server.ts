@@ -5,7 +5,7 @@ import {fastifySwagger} from '@fastify/swagger';
 import  {fastifySwaggerUi} from '@fastify/swagger-ui'
 import fastifyJwt from '@fastify/jwt';
 import { registerRoutes } from './routes/index';
-
+import rateLimit from '@fastify/rate-limit';
 
 const app = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -16,7 +16,7 @@ app.setSerializerCompiler(serializerCompiler)
 app.register(fastifyJwt, { 
     secret:process.env.JWT_SECRET || 'my-ass-secret'
 })
-
+app.register(rateLimit);
 app.register(fastifyCors, {origin: '*'})
 
 app.register(fastifySwagger, { 

@@ -27,13 +27,16 @@ export async function userRoutes(app: FastifyTypedInstance) {
 
 
     app.post('/login', {
-        onRequest: [
-            app.rateLimit({
-               max:5,
-               timeWindow: '1 minute',
-               keyGenerator: (req) => req.ip
-            })
-        ],
+        config: {
+            rateLimit: {
+                max: 5,                   // até 5 tentativas
+                timeWindow: '1 minute',   // por 1 minuto
+                keyGenerator: (req) => req.ip, // conte por IP
+                hook: 'onRequest',        // padrão; mantém no início do ciclo
+                allowList: ['127.0.0.1'], //  whitelist para dev/local
+                // skipSuccessfulRequests: true, 
+            }
+        },
         schema: {
             tags: ['Auth'],
             description: 'Login do usuário',

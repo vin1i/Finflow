@@ -178,8 +178,7 @@ GET /transactions?type=income&startDate=2025-08-01
 ### 1. Clonar e instalar dependências
 ```bash
 git clone <url-do-repositorio>
-cd Finflow
-npm install -g pnpm
+npm install -g pnpm # caso não possua o pnpm instalado globalmente
 pnpm install
 pnpm prisma generate   # gera o Prisma Client
 ```

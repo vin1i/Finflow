@@ -1,11 +1,11 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { PrismaClient } from "@prisma/client";
+import { AccountType, PrismaClient } from "@prisma/client";
 import * as accountService from "../services/accountService";
 
 
 // Cria uma nova conta bancária
 export async function createAccount(request: FastifyRequest, reply: FastifyReply) {
-  const { name, type, balance } = request.body as { name: string, type: string, balance?: number };
+  const { name, type, balance } = request.body as { name: string, type: AccountType, balance?: number };
   const userId = (request as any).user.userId;
 
   const account = await accountService.createAccount({
@@ -37,7 +37,7 @@ export async function listAccounts(request: FastifyRequest, reply: FastifyReply)
 export async function updateAccount(request: FastifyRequest, reply: FastifyReply) {
   const { id } = request.params as { id: string };
   const userId = (request as any).user.userId;
-  const data = request.body as { name?: string; type?: string; balance?: number };
+  const data = request.body as { name?: string; type?: AccountType; balance?: number };
 
   const account = await accountService.getAccountById(id);
   if (!account || account.userId !== userId) {

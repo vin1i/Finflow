@@ -1,25 +1,28 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE `User` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `email` VARCHAR(191) NOT NULL,
+    `password` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
 
-  - Added the required column `password` to the `User` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `updateAt` to the `User` table without a default value. This is not possible if the table is not empty.
-
-*/
--- AlterTable
-ALTER TABLE `User` ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    ADD COLUMN `password` VARCHAR(191) NOT NULL,
-    ADD COLUMN `updateAt` DATETIME(3) NOT NULL;
+    UNIQUE INDEX `User_email_key`(`email`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `Account` (
     `id` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
-    `type` VARCHAR(191) NOT NULL,
+    `type` ENUM('checking', 'savings', 'cash', 'wallet', 'investment', 'other') NOT NULL,
     `balance` DOUBLE NOT NULL DEFAULT 0,
     `userId` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updateAt` DATETIME(3) NOT NULL,
+    `updatedAt` DATETIME(3) NOT NULL,
 
+    INDEX `Account_userId_idx`(`userId`),
+    UNIQUE INDEX `Account_userId_name_key`(`userId`, `name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -27,7 +30,7 @@ CREATE TABLE `Account` (
 CREATE TABLE `Category` (
     `id` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
-    `type` VARCHAR(191) NOT NULL,
+    `type` ENUM('income', 'expense') NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -40,6 +43,8 @@ CREATE TABLE `Transaction` (
     `id` VARCHAR(191) NOT NULL,
     `amount` DOUBLE NOT NULL,
     `date` DATETIME(3) NOT NULL,
+    `type` ENUM('income', 'expense') NOT NULL,
+    `title` VARCHAR(191) NOT NULL DEFAULT 'Sem título',
     `description` VARCHAR(191) NULL,
     `accountId` VARCHAR(191) NOT NULL,
     `categoryId` VARCHAR(191) NOT NULL,

@@ -1,0 +1,17 @@
+# Não mandar lixo pro build
+node_modules
+.pnpm-store
+.pnp.cjs
+.pnp.loader.mjs
+dist
+build
+coverage
+.tmp
+.env*
+.git
+.gitignore
+Dockerfile*
+docker-compose*.yml
+**/*.log
+.DS_Store
+.next

@@ -12,6 +12,16 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+  // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+enum AccountType {
+  checking
+  savings
+  cash
+  wallet
+  investment
+  other
 }
 
 enum CategoryType { 
@@ -41,13 +51,15 @@ model User {
 model Account {
   id String @id @default(uuid())
   name String
-  type String  
+  type AccountType  
   balance Float @default(0)
   user User @relation(fields: [userId], references: [id])
   userId String 
   transactions Transaction[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt 
+  @@index([userId])
+  @@unique([userId, name])
 }
 
 model Category {
@@ -67,6 +79,7 @@ model Transaction {
   amount Float
   date DateTime
   type TransactionType
+  title String @default("Sem título")
   description String?
   account Account @relation(fields: [accountId], references: [id])
   accountId String

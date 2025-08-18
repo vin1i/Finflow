@@ -7,7 +7,7 @@ import { CreateTransactionDTO, UpdateTransactionDTO } from "../dtos/transactions
 import { prisma } from "../services/prisma";
 // POST /transactions
 export async function createTransaction(request: FastifyRequest, reply: FastifyReply) {
-  const { amount, date, type, description, accountId, categoryId } = request.body as CreateTransactionDTO;
+  const { amount, date, type, title, description, accountId, categoryId } = request.body as CreateTransactionDTO;
   const userId = (request as any).user.userId;
 
   // Buscar categoria e validar tipo
@@ -38,11 +38,12 @@ export async function createTransaction(request: FastifyRequest, reply: FastifyR
   });
 
   const useCase = new CreateTransactionUseCase();
-  const transaction = await useCase.execute({ amount, date, type, description, accountId, categoryId, userId });
+  const transaction = await useCase.execute({ amount, date, type, title, description, accountId, categoryId, userId });
   reply.code(201).send({
     ...transaction,
-    date: transaction.date.toISOString(), 
+    title: transaction.title,
     description: transaction.description ?? null,
+    date: transaction.date.toISOString(),
     createdAt: transaction.createdAt.toISOString(),
     updatedAt: transaction.updatedAt.toISOString()
   });
@@ -80,6 +81,7 @@ reply.send(
     amount: tx.amount,
     date: tx.date instanceof Date ? tx.date.toISOString() : tx.date,
     type: tx.type,
+    title: tx.title,
     description: tx.description ?? null,
     accountId: tx.accountId,
     categoryId: tx.categoryId,
@@ -98,8 +100,17 @@ export async function updateTransaction(request: FastifyRequest, reply: FastifyR
   const updated = await useCase.execute(id, data);
   reply.send({
     ...updated,
-    createdAt: updated.createdAt.toISOString(),
-    updatedAt: updated.updatedAt.toISOString()
+  id: updated.id,
+  amount: updated.amount,
+  date: updated.date instanceof Date ? updated.date.toISOString() : updated.date,
+  type: updated.type,
+  title: updated.title,
+  description: updated.description ?? null,
+  accountId: updated.accountId,
+  categoryId: updated.categoryId,
+  userId: updated.userId,
+  createdAt: updated.createdAt instanceof Date ? updated.createdAt.toISOString() : updated.createdAt,
+  updatedAt: updated.updatedAt instanceof Date ? updated.updatedAt.toISOString() : updated.updatedAt
   });
 }
 

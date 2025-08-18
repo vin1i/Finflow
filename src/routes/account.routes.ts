@@ -5,6 +5,7 @@ import z from "zod";
 
 
 export async function accountRoutes(app: FastifyTypedInstance) {
+const accountTypeEnum = z.enum(["checking", "savings", "cash", "wallet", "investment", "other"]);
 
 // Todas as rotas que possuem preHandler: [authMiddleware], somente o user autenticado tem autorização em cima da ação da rota
     app.post('/accounts', {
@@ -14,14 +15,14 @@ export async function accountRoutes(app: FastifyTypedInstance) {
             description: 'Criar uma nova conta bancária',
             body: z.object({
                 name: z.string(),
-                type: z.string(),
+                type: accountTypeEnum,
                 balance: z.number().optional()
             }),
             response: {
                 201: z.object({
                     id: z.string(),
                     name: z.string(),
-                    type: z.string(),
+                    type: accountTypeEnum,
                     balance: z.number(),
                     userId: z.string(),
                     createdAt: z.string(),
@@ -42,7 +43,7 @@ export async function accountRoutes(app: FastifyTypedInstance) {
                 200: z.array(z.object({
                     id: z.string(),
                     name: z.string(),
-                    type: z.string(),
+                    type: accountTypeEnum,
                     balance: z.number(),
                     userId: z.string(),
                     createdAt: z.string(),
@@ -67,7 +68,7 @@ export async function accountRoutes(app: FastifyTypedInstance) {
                 200: z.object({
                     id: z.string(),
                     name: z.string(),
-                    type: z.string(),
+                    type: accountTypeEnum,
                     balance: z.number(),
                     userId: z.string(),
                     createdAt: z.string(),
